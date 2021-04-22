@@ -25,7 +25,7 @@ class Driver:
 
         # find contours in the thresholded image and initialize the
         # shape detector
-        cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
+        cnts = cv2.findContours(thresh.copy(), cv2.RETR_CCOMP,
                                 cv2.CHAIN_APPROX_SIMPLE)
         cnts = imutils.grab_contours(cnts)
         sd = ShapeDetector()
@@ -35,7 +35,7 @@ class Driver:
             M = cv2.moments(c)
             cX = int((M["m10"] / M["m00"]) * ratio)
             cY = int((M["m01"] / M["m00"]) * ratio)
-            shape = sd.detect(c)
+            result = sd.detect(c)
             # multiply the contour (x, y)-coordinates by the resize ratio,
             # then draw the contours and the name of the shape on the image
             c = c.astype("float")
@@ -43,8 +43,10 @@ class Driver:
             c = c.astype("int")
 
             cv2.drawContours(image, [c], -1, (0, 0, 255), 2)
-            cv2.putText(image, shape, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-                        (128, 128, 128), 2)
+            cv2.putText(image, result[0], (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                        (221, 254, 128), 2)
+            cv2.putText(image, result[1], (cX, cY + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.3,
+                        (255, 255, 255), 2)
             # show the output image
             cv2.imshow("Image", image)
             cv2.waitKey(2000)
