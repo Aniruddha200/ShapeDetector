@@ -6,7 +6,6 @@ class ShapeDetector:
 	def detect(self, c):
 		peri = cv2.arcLength(c, True)
 		approx = cv2.approxPolyDP(c, 0.04 * peri, True)
-		area = cv2.contourArea(c)
 
 		if len(approx) == 3:
 			shape = "triangle"
@@ -28,4 +27,4 @@ class ShapeDetector:
 		else:
 			shape = "circle"
 		# return the name of the shape
-		return [shape, f'{area}']
+		return shape
