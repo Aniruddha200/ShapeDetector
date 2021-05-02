@@ -6,22 +6,25 @@ from shapeDetector import ShapeDetector
 
 
 class Driver:
-    def __init__(self, image, thesh_values):
+    def __init__(self, image, area, thresh_method_input, values):
         self.target_image = image
-        self.target_image_inverted = cv2.bitwise_not(self.target_image)
-        self.thesh_values = thesh_values
+        self.min_area = area
+        self.thresh_algo = thresh_method_input
+        self.thresh_values = values
 
-    def runDriver(self):
+    def detect(self):
 
-        resized = imutils.resize(self.target_image_inverted, width=300)
+        resized = imutils.resize(self.target_image, width=300)
         ratio = self.target_image.shape[0] / float(resized.shape[0])
-        # convert the resized image to grayscale, blur it slightly,
-        # and threshold it
-        gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
-        # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        thresh = cv2.threshold(gray, self.thesh_values[0], self.thesh_values[1], cv2.THRESH_BINARY)[1]
 
-        cv2.imshow("amu", thresh)
+        # convert the resized image to grayscale,
+        gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+
+        # and threshold it
+        if self.thresh_algo == "0":
+            thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)[1]
+        else:
+            thresh = cv2.threshold(gray, self.thresh_values, 255, cv2.THRESH_BINARY)[1]
 
         # find contours in the thresholded image and initialize the
         # shape detector
@@ -33,7 +36,7 @@ class Driver:
             # compute the center of the contour, then detect the name of the
             # shape using only the contour
             area = cv2.contourArea(c)
-            if area > 500:
+            if area > self.min_area:
                 result = sd.detect(c)
             else:
                 continue
@@ -48,11 +51,14 @@ class Driver:
             c *= ratio
             c = c.astype("int")
             cv2.drawContours(self.target_image, [c], -1, (0, 127, 254), 1)
-            cv2.putText(self.target_image, result, (cX - 20, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-                        (221, 254, 128), 2)
-            cv2.putText(self.target_image, f'{area}', (cX, cY + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.3,
-                        (127, 128, 128), 2)
+            cv2.putText(self.target_image, result, (cX - 30, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                        (128, 254, 128), 2)
+            cv2.putText(self.target_image, f'{area}p', (cX - 30, cY + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.3,
+                        (255, 0, 128), 1)
             # show the output image
+            cv2.imshow("Image", self.target_image)
+            cv2.waitKey(2000)
+        # end of for loop
         cv2.imshow("Image", self.target_image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
